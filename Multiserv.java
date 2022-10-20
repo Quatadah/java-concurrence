@@ -4,17 +4,25 @@ import java.util.Queue;
 import java.io.IOException;
 
 
-class Multiserv{    
+class Multiserv{ 
+       
+    private Counter counter;
+    
+    public Multiserv(Counter c){
+        this.counter = c;
+    }
     
     class MainThread implements Runnable{
         private Thread main;
         private ServerSocket serverSocket;       
         private ServerSocket toClose; 
+
         public MainThread(Thread main, ServerSocket toClose) throws IOException{
             this.main = main;
             this.serverSocket = new ServerSocket(5000);            
             this.toClose = toClose;
         }
+
         public void run(){
             System.out.println("Je suis admin");
             try (Socket socket = serverSocket.accept()) {
@@ -29,12 +37,13 @@ class Multiserv{
                 e.printStackTrace();
             }
             main.interrupt();
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }                
-    }
-
-    private Counter counter;
-    public Multiserv(Counter c){
-        this.counter = c;
     }
 
     public void start() throws Exception{
@@ -57,9 +66,7 @@ class Multiserv{
                     Future<String> result = pool.submit(new Work(socket, this.counter));
                     resultList.add(result);
                 }catch(SocketException e){                    
-                }
-                
-                
+                }  
             }
         }
 
